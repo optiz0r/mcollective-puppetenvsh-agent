@@ -20,11 +20,12 @@ module MCollective
                 @puppetenvsh.fetch
 
                 reply.fail "Invalid dynamic environment name", 4 unless @puppetenvsh.validate_environment_name request[:environment]
-                reply.fail "Environment already exists", 4 if @puppetenvsh.list.include?(request[:environment])
+                reply.fail "Environment already exists", 1 if @puppetenvsh.list.include?(request[:environment])
                 
                 return unless reply.statuscode == 0
 
-                reply[:status] = @puppetenvsh.add request[:environment]
+                reply[:status], messages = @puppetenvsh.add request[:environment]
+                reply.fail "Add failed: #{messages}", 4 unless reply[:status]
             end
 
             action "update" do
@@ -33,11 +34,12 @@ module MCollective
                 @puppetenvsh.fetch
 
                 reply.fail "Invalid dynamic environment name", 4 unless @puppetenvsh.validate_environment_name request[:environment]
-                reply.fail "Environment does not exist", 4 unless @puppetenvsh.list.include?(request[:environment])
+                reply.fail "Environment does not exist", 1 unless @puppetenvsh.list.include?(request[:environment])
                 
                 return unless reply.statuscode == 0
 
-                @puppetenvsh.update request[:environment]
+                reply[:status], messages = @puppetenvsh.update request[:environment]
+                reply.fail "Update failed: #{messages}", 1 unless reply[:status]
             end
 
             action "rm" do
@@ -46,7 +48,7 @@ module MCollective
                 @puppetenvsh.fetch
 
                 reply.fail "Invalid dynamic environment name", 4 unless @puppetenvsh.validate_environment_name request[:environment]
-                reply.fail "Environment does not exist", 4 unless @puppetenvsh.list.include?(request[:environment])
+                reply.fail "Environment does not exist", 1 unless @puppetenvsh.list.include?(request[:environment])
                 
                 return unless reply.statuscode == 0
 

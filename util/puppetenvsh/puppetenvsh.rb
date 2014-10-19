@@ -21,7 +21,7 @@ module MCollective
                 # Username for connecting to the remote
                 @username = config.pluginconf.fetch('puppetenvsh.username', 'git')
                 # Whether to use librarian-puppet to manage modules
-                @use_librarian = config.pluginconf.fetch('puppetenvsh.use_librarian', false)
+                @use_librarian = config.pluginconf.fetch('puppetenvsh.use_librarian', "false")
                 # Paths for binaries used by this agent
                 @git = config.pluginconf.fetch('puppetenvsh.git', 'git')
                 @new_workdir = config.pluginconf.fetch('puppetenvsh.new_workdir', 'git-new-workdir')
@@ -29,8 +29,12 @@ module MCollective
 
                 # Some systems (rhel6) require a newer runtime for librarian-puppet
                 # Source the ruby193 SCL environment if required
-                @use_ruby193 = config.pluginconf.fetch('puppetenvsh.use_ruby193', false)
+                @use_ruby193 = config.pluginconf.fetch('puppetenvsh.use_ruby193', "false")
                 @ruby193_env = config.pluginconf.fetch('puppetenvsh.ruby193_env', '/opt/rh/ruby193/enable')
+
+                # Convert string booleans to real booleans
+                @use_librarian = !! (@use_librarian =~ /^1|true|yes/)
+                @use_ruby193   = !! (@use_ruby193   =~ /^1|true|yes/)
 
                 @ruby_env = ""
                 if @use_ruby193
@@ -62,24 +66,22 @@ module MCollective
             # * librarian will be run if enabled
             def add(name)
                 workdir = File.join(@basedir, name)
-                command = "#{@new_workdir.shellescape} #{@master_repo_path.shellescape} #{workdir.shellescape} #{name.shellescape} 2>&1"
+                command = "#{@new_workdir.shellescape} #{@master_repo_path.shellescape} #{workdir.shellescape} #{name.shellescape} >/dev/null 2>&1"
                 output = ""
-                returncode = 0
+                failed = false
 
-                Dir.chdir(workdir) {
-                    output = `#{command}`
-                    returncode = $?.exitstatus
+                output = `#{command}`
+                failed = $?.exitstatus != 0
 
-                    submodule_returncode, submodule_output = submodule_update(name)
-                    returncode |= submodule_returncode
-                    output += submodule_output
+                submodule_success, submodule_output = submodule_update(name)
+                failed ||= ! submodule_success
+                output += submodule_output
 
-                    librarian_returncode, librarian_output = librarian_update(name)
-                    returncode |= librarian_returncode
-                    output += librarian_output
-                }
+                librarian_success, librarian_output = librarian_update(name)
+                failed ||= ! librarian_success
+                output += librarian_output
 
-                return (returncode == 0), output
+                return ! failed, output
             end
 
             # Updates an existing environment
@@ -89,24 +91,24 @@ module MCollective
             # * librarian will be run if enabeld
             def update(name)
                 workdir = File.join(@basedir, name)
-                command = "#{@git.shellescape} reset --hard #{@upstream.shellescape}/#{name.shellescape}"
+                command = "#{@git.shellescape} reset --hard #{@upstream.shellescape}/#{name.shellescape} 2>&1 >/dev/null"
                 output = ""
-                returncode = 0
+                failed = false
 
                 Dir.chdir(workdir) {
                     output = `#{command}`
-                    returncode = $?.exitstatus
+                    failed = ! $?.exitstatus == 0
 
-                    submodule_returncode, submodule_output = submodule_update(name)
-                    returncode |= submodule_returncode
+                    submodule_success, submodule_output = submodule_update(name)
+                    failed ||= ! submodule_success
                     output += submodule_output
 
-                    librarian_returncode, librarian_output = librarian_update(name)
-                    returncode |= librarian_returncode
+                    librarian_success, librarian_output = librarian_update(name)
+                    failed ||= ! librarian_success
                     output += librarian_output
                 }
 
-                return (returncode == 0), output
+                return ! failed, output
             end
 
             # Deletes an existing environment
@@ -178,15 +180,16 @@ module MCollective
             # Inits and updates any submodules in the environment
             def submodule_update(name)
                 workdir = File.join(@basedir, name)
+                command = "#{@git.shellescape} submodule init 2>&1 && #{@git.shellescape} submodule update 2>&1 >/dev/null"
                 result = ""
-                returncode = 0
+                success = false
 
                 Dir.chdir(workdir) {
-                    result = `#{@git.shellescape} submodule init 2>&1 && #{@git.shellescape} submodule update 2>&1`
-                    returncode = $?.exitstatus
+                    result = `#{command}`
+                    success = $?.exitstatus == 0
                 }
 
-                return (returncode == 0), result
+                return success, result
             end
 
             # Uses librarian-puppet to update modules in an environment
@@ -194,32 +197,32 @@ module MCollective
             # Puppetfile.lock must be present to ensure the environment contains
             # the same versions used by the developer
             def librarian_update(name)
-                if @use_librarian
-                    workdir = File.join(@basedir, name)
-                    command = "#{@ruby_env}#{@librarian.shellescape} install --verbose 2>&1"
-                    result = ""
-                    returncode = 0
+                workdir = File.join(@basedir, name)
+                command = "#{@ruby_env}#{@librarian.shellescape} install --quiet 2>&1"
+                result = ""
+                success = false
 
-                    return false, "Puppetfile.lock not present in environment #{name}; not invoking the librarian" unless
-                        File.exists?(File.join(workdir, 'Puppetfile.lock'))
+                return true, "" unless @use_librarian
+                return true, "" unless File.exists?(File.join(workdir, 'Puppetfile.lock'))
 
-                    Dir.chdir(workdir) {
-                        result = `#{command} 2>&1`
-                        returncode = $?.exitstatus
-                    }
+                Dir.chdir(workdir) {
+                    result = `#{command} 2>&1`
+                    success = $?.exitstatus == 0
+                }
 
-                    return (returncode == 0), result
-                end
+                return success, result
             end
 
             # Retrieve a list of branches from the upstream remote
             def upstream_branches
-                command = "#{@git.shellescape} branch --list --remotes #{@upstream.shellescape}'/*'"
+                command = "#{@git.shellescape} branch --list --remotes #{@upstream.shellescape}'/*' | grep -v #{@upstream.shellescape}'/HEAD ->'"
                 branches = []
                 
                 Dir.chdir(@master_repo_path) {
                     output = `#{command}`
-                    branches = output.chomp.sub("#{@upstream}/", "").split(/n/)
+                    branches = output.chomp.split(/\n/).map { |branch|
+                        branch.strip.sub("#{@upstream}/", "")
+                    }
                 }
 
                 return branches
@@ -245,14 +248,14 @@ module MCollective
             # * Submodules are updated recursively if the gitmodule commit is updated
             def fetch
                 command = "#{@git.shellescape} fetch --prune --recurse-submodules=on-demand --quiet #{@upstream.shellescape}"
-                returncode = 0
+                success = false
 
                 Dir.chdir(@master_repo_path) {
                     `#{command}`
-                    returncode = $?.exitstatus
+                    success = $?.exitstatus == 0
                 }
 
-                return (returncode == 0)
+                return success
             end
 
         end

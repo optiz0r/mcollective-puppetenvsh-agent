@@ -4,7 +4,7 @@ metadata :name => "puppetenvsh",
          :license => "MIT",
          :version => "0.1",
          :url => "https://github.com/optiz0r/mcollective-puppetenvsh-agent",
-         :timeout => 60
+         :timeout => 300
 
 action "list", :description => "Lists all dynamic environments currently available" do
     output :environments,
