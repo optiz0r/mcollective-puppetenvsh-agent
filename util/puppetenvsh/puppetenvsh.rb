@@ -138,7 +138,7 @@ module MCollective
 
                 upstream_branches.each do |branch|
                     environment = File.join(@basedir, branch)
-                    if Dir.exists?(environment)
+                    if File.directory?(environment)
                         result, output = update(branch)
 
                         if result
@@ -203,7 +203,7 @@ module MCollective
                 success = false
 
                 return true, "" unless @use_librarian
-                return true, "" unless File.exists?(File.join(workdir, 'Puppetfile.lock'))
+                return true, "" unless File.directory?(File.join(workdir, 'Puppetfile.lock'))
 
                 Dir.chdir(workdir) {
                     result = `#{command} 2>&1`
@@ -215,7 +215,7 @@ module MCollective
 
             # Retrieve a list of branches from the upstream remote
             def upstream_branches
-                command = "#{@git.shellescape} branch --list --remotes #{@upstream.shellescape}'/*' | grep -v #{@upstream.shellescape}'/HEAD ->'"
+                command = "#{@git.shellescape} branch -r | grep #{@upstream.shellescape}'/*' | grep -v #{@upstream.shellescape}'/HEAD ->'"
                 branches = []
                 
                 Dir.chdir(@master_repo_path) {
