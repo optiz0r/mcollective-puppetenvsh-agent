@@ -247,7 +247,7 @@ module MCollective
             # * Stale remote references are pruned
             # * Submodules are updated recursively if the gitmodule commit is updated
             def fetch
-                command = "#{@git.shellescape} fetch --prune --recurse-submodules=on-demand --quiet #{@upstream.shellescape}"
+                command = "#{@git.shellescape} fetch --prune --quiet #{@upstream.shellescape}"
                 success = false
 
                 Dir.chdir(@master_repo_path) {
