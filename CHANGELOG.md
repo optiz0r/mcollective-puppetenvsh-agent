@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.4
+---
+
+ - Remove --recurse-submodules option from git fetch which isn't supported
+   on RHEL6.
+
 0.3
 ---
 
