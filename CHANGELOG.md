@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.3
+---
+
+ - Puppetfile.lock should be tested for existance not for being a directory.
+   This was overzealous search/replace introduced in 0.2.
+
 0.2
 ---
 
