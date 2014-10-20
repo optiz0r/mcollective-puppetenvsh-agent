@@ -203,7 +203,7 @@ module MCollective
                 success = false
 
                 return true, "" unless @use_librarian
-                return true, "" unless File.directory?(File.join(workdir, 'Puppetfile.lock'))
+                return true, "" unless File.exists?(File.join(workdir, 'Puppetfile.lock'))
 
                 Dir.chdir(workdir) {
                     result = `#{command} 2>&1`
