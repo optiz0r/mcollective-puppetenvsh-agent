@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.5
+---
+
+ - Add support for local_environments
+ - Update packaging documentation for RedHat/CentOS/Debian
+
 0.4
 ---
 
