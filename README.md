@@ -23,6 +23,7 @@ Installation
    https://github.com/optiz0r/gentoo-overlay
  - Sabayon - Pre-build packages are available in my packages.sihnon.net
    entropy overlay: http://pkg.sihnon.net/entropy/standard/packages.sihnon.net/
+ - RedHat/Centos/Debian - Agent can be packaged using `mco plugin package`.
 
 For other platforms, install the plugin manually by copying the agent and util
 directories into your mcollective plugin directory. Or feel free to build a
