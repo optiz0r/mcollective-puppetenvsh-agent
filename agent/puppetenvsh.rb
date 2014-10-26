@@ -47,12 +47,13 @@ module MCollective
 
                 @puppetenvsh.fetch
 
-                reply.fail "Invalid dynamic environment name", 4 unless @puppetenvsh.validate_environment_name request[:environment]
+                reply.fail "Invalid dynamic environment name", 4 unless @puppetenvsh.validate_environment_name request[:environment], false
                 reply.fail "Environment does not exist", 1 unless @puppetenvsh.list.include?(request[:environment])
                 
                 return unless reply.statuscode == 0
 
-                @puppetenvsh.rm request[:environment]
+                reply[:status], messages = @puppetenvsh.rm request[:environment]
+                reply.fail "Remove failed: #{messages}", 1 unless reply[:status]
             end
 
             action "update-all" do
