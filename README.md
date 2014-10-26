@@ -39,6 +39,10 @@ The following configuration parameters are available:
     master repo. Defaults to `.puppet.git`.
  - `upstream` - Name of the git remote to pull changes from when updating.
     Defaults to `origin`.
+ - `local_environments` - A comma-separated list of local environment directories
+    that won't be managed by the agent. Suitable for containing development
+    environments on test puppetmasters. Not intended to be used on production
+    masters. Defaults to "live".
  - `use_librarian` - Whether to use librarian-puppet to manage modules.
     Defaults to `false`.
  - `git` - Path to git binary to use. Defaults to `git`, using whatever's
