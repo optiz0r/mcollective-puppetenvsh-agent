@@ -4,7 +4,7 @@ class MCollective::Application::Puppetenvsh<MCollective::Application
     usage <<-END_OF_USAGE
 mco puppetenvsh <ACTION> [ENVIRONMENT] [filters]
 mco puppetenvsh <list|update-all> [filters]
-mco puppetenvsh <add|update|rm> <ENVIRONMENT> [filters]"
+mco puppetenvsh <add|update|rm> <ENVIRONMENT> [filters]
 END_OF_USAGE
 
     def handle_message(action, message, *args)
