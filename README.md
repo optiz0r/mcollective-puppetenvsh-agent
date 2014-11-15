@@ -67,9 +67,9 @@ The following actions are supported:
 
  - Return a list of all the dynamic environments currently available on the
    master
- ```
- mco puppetenvsh list [$filters]
- ```
+```
+mco puppetenvsh list [$filters]
+```
  - Checkout a new dynamic environment from the git branch named `foo`
 ```
 mco puppetenvsh add foo [$filters]
