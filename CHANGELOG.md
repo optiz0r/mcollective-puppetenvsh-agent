@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.6
+---
+
+ - Add an mcollective application for use as 'mco pupetenvsh' without needing
+   to interact with the rpc interface directly.
+ - Update the README with an r10k comparison
+
 0.5
 ---
 
