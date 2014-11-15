@@ -12,7 +12,7 @@ Prerequisites
 -------------
 
  - It assumes the user mcollective is running under has access to a
-   passwordless SSH key suitable for accessing your git repository
+   passwordless SSH key suitable for accessing your git repositories
  - It requires a copy of your git repository be checked out into
    $environmentpath/.puppet.git.
 
@@ -21,7 +21,7 @@ Installation
 
  - Gentoo - An ebuild is available in my sihnon overlay:
    https://github.com/optiz0r/gentoo-overlay
- - Sabayon - Pre-build packages are available in my packages.sihnon.net
+ - Sabayon - Pre-built packages are available in my packages.sihnon.net
    entropy overlay: http://pkg.sihnon.net/entropy/standard/packages.sihnon.net/
  - RedHat/Centos/Debian - Agent can be packaged using `mco plugin package`.
 
@@ -65,16 +65,41 @@ Usage
 
 The following actions are supported:
 
- - `list` - Return a list of all the dynamic environments currently available
-   on the master
- - `add environment=foo` - Checkout a new dynamic environment from the git
-   branch named `foo`
- - `update environment=foo` - Update the dynamic environment to the latest
-   commit in git branch named `foo`
- - `rm environment=foo` - Delete the dynamic environment named `foo`
- - `update-all` - Update all dynamic environments from git. Any missing
-   environments will be created, existing ones updated, and any stale
-   environments no longer present in git will be removed.
+ - Return a list of all the dynamic environments currently available on the
+   master
+ ```
+ mco puppetenvsh list [$filters]
+ ```
+ - Checkout a new dynamic environment from the git branch named `foo`
+```
+mco puppetenvsh add foo [$filters]
+```
+ - Update the dynamic environment to the latest commit in git branch named `foo`
+```
+mco puppetenvsh update foo [$filters]
+```
+ - Delete the dynamic environment named `foo`
+```
+mco puppetenvsh rm foo [$filters]
+```
+ - Update all dynamic environments from git. Any missing environments will be
+   created, existing ones updated, and any stale environments no longer present
+   in git will be removed.
+```
+mco puppetenvsh update-all [$filters]
+```
+
+Similar projects
+----------------
+
+This project fulfils similar requirements as r10k
+(https://github.com/adrienthebo/r10k). The principal differences are:
+ - It supports modules stored in git submodules
+ - It uses librarian-puppet to manage modules. librarian-puppet supports
+   automatic dependency resolution for forge modules
+ - As an mcollective plugin, orchestration is built-in. This is most
+   useful when you have a fleet of puppet masters that all need to be
+   updated simultaneously.
 
 Contributions
 -------------
