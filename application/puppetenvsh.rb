@@ -69,7 +69,7 @@ END_OF_USAGE
                                 end
                             }
                             puts(pattern % [result[:sender], result[:data].map{|k,v| "#{k}: #{v.join(',')}"}.join(' ')])
-                            puts("Messages: #{messages}")
+                            puts("Messages: #{messages}") if messages
                             puts
                         end
                     end
