@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.6.1
+---
+
+ - Minor output fixes
+
 0.6
 ---
 
