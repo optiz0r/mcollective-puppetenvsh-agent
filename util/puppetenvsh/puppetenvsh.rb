@@ -20,8 +20,8 @@ module MCollective
                 @upstream = config.pluginconf.fetch('puppetenvsh.upstream', 'origin')
                 # Username for connecting to the remote
                 @username = config.pluginconf.fetch('puppetenvsh.username', 'git')
-                # Ignore local environments
-                @local_environments = config.pluginconf.fetch('puppetenvsh.local_environments', 'live')
+                # Ignore local environments (comma-separated list of regex matches)
+                @local_environments = config.pluginconf.fetch('puppetenvsh.local_environments', '^live')
                 # Whether to use librarian-puppet to manage modules
                 @use_librarian = config.pluginconf.fetch('puppetenvsh.use_librarian', "false")
                 # Paths for binaries used by this agent
@@ -37,9 +37,6 @@ module MCollective
                 # Convert string booleans to real booleans
                 @use_librarian = !! (@use_librarian =~ /^1|true|yes/)
                 @use_ruby193   = !! (@use_ruby193   =~ /^1|true|yes/)
-
-                # Convert lists
-                @local_environments = @local_environments.split(/,/)
 
                 @ruby_env = ""
                 if @use_ruby193
@@ -70,7 +67,7 @@ module MCollective
             # * submodules will be updated if present
             # * librarian will be run if enabled
             def add(name)
-                return false, "#{name} is a protected local environment" if @local_environments.include?(name)
+                return false, "#{name} is a protected local environment" if /#{@local_environments}/ =~ name
 
                 workdir = File.join(@basedir, name)
                 command = "#{@new_workdir.shellescape} #{@master_repo_path.shellescape} #{workdir.shellescape} #{name.shellescape} >/dev/null 2>&1"
@@ -97,7 +94,7 @@ module MCollective
             # * Submodules will be updated if present
             # * librarian will be run if enabeld
             def update(name)
-                return false, "#{name} is a protected local environment" if @local_environments.include?(name)
+                return false, "#{name} is a protected local environment" if /#{@local_environments}/ =~ name
 
                 workdir = File.join(@basedir, name)
                 command = "#{@git.shellescape} reset --hard #{@upstream.shellescape}/#{name.shellescape} 2>&1 >/dev/null"
@@ -124,7 +121,8 @@ module MCollective
             #
             # * It's assumed existence of the environment has already been checked
             def rm(name)
-                return false, "#{name} is a protected local environment" if @local_environments.include?(name)
+                return false, "#{name} is a protected local environment" if /#{@local_environments}/ =~ name
+
 
                 workdir = File.join(@basedir, name)
                 FileUtils.remove_entry_secure(workdir, true)
@@ -150,7 +148,7 @@ module MCollective
                 messages = ""
 
                 upstream_branches.each do |branch|
-                    next if @local_environments.include?(branch)
+                    next if /#{@local_environments}/ =~ branch
 
                     environment = File.join(@basedir, branch)
                     if File.directory?(environment)
@@ -183,7 +181,7 @@ module MCollective
 
                 branches = upstream_branches
                 list.each do |environment|
-                    next if @local_environments.include?(environment)
+                    next if /#{@local_environments}/ =~ environment
 
                     if not branches.include?(environment)
                         rm(environment)
