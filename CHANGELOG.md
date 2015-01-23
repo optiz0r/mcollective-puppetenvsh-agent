@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.7
+---
+
+ - Change the local_environments parameter from a comma-separated list to a
+   single regex pattern
+
 0.6.1
 ---
 
