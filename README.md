@@ -101,6 +101,14 @@ This project fulfils similar requirements as r10k
    useful when you have a fleet of puppet masters that all need to be
    updated simultaneously.
 
+Development
+-----------
+
+Updating Choria metadata
+========================
+
+    ./scripts/ddl2json.rb agent/puppetenvsh.ddl > agent/puppetenvsh.json
+
 Contributions
 -------------
 

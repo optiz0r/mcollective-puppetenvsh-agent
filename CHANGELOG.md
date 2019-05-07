@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.8
+---
+
+- Added support for [Choria](https://choria.io/)
+
 0.7
 ---
 
